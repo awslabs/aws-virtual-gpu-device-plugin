@@ -51,7 +51,7 @@ type NvidiaDevicePlugin struct {
 }
 
 // NewNvidiaDevicePlugin returns an initialized NvidiaDevicePlugin
-func NewNvidiaDevicePlugin(enableMPS, enableHealthCheck bool, memoryUnit int) *NvidiaDevicePlugin {
+func NewNvidiaDevicePlugin(enableMPS bool, memoryUnit int) *NvidiaDevicePlugin {
 	vGPUDevs := getVGPUDevices(memoryUnit)
 	physicalDevs := getPhysicalGPUDevices()
 
