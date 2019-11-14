@@ -147,12 +147,15 @@ func watchXIDs(ctx context.Context, devs []*pluginapi.Device, xids chan<- *plugi
 	eventSet := nvml.NewEventSet()
 	defer nvml.DeleteEventSet(eventSet)
 
+	// TODO: convert virtual GPU to physical GPU. It's wasting resources here.
+	// We don't have to loop all virtual GPUS here. Only need to check physical CPUs.
+
 	for _, d := range devs {
-		// convert virtual GPU to physical GPU
-		physicialDeviceId := getPhysicalDeviceID(d.ID)
-		err := nvml.RegisterEventForDevice(eventSet, nvml.XidCriticalError, physicialDeviceId)
+		physicialDeviceID := getPhysicalDeviceID(d.ID)
+		log.Printf("virtual id %s physical id %s", d.ID, physicialDeviceID)
+		err := nvml.RegisterEventForDevice(eventSet, nvml.XidCriticalError, physicialDeviceID)
 		if err != nil && strings.HasSuffix(err.Error(), "Not Supported") {
-			log.Printf("Warning: %s is too old to support healthchecking: %s. Marking it unhealthy.", d.ID, err)
+			log.Printf("Warning: %s is too old to support healthchecking: %s. Marking it unhealthy.", physicialDeviceID, err)
 
 			xids <- d
 			continue
