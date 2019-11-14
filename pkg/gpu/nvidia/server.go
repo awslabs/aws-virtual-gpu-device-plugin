@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main
+package nvidia
 
 import (
 	"fmt"
@@ -24,7 +24,6 @@ import (
 	"path"
 	"strings"
 	"time"
-	"reflect"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

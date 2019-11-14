@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main
+package nvidia
 
 import (
 	"fmt"
@@ -44,24 +44,24 @@ func getVGPUDevices(memoryUnit int64) []*pluginapi.Device {
 		d, err := nvml.NewDevice(i)
 		check(err)
 
-		log.Infof("Device Memory: %d, vGPU Memory: %d", uint(*d.Memory), uint(memoryUnit))
+		log.Printf("Device Memory: %d, vGPU Memory: %d", uint(*d.Memory), uint(memoryUnit))
 		vGPUCount := uint(*d.Memory) / uint(memoryUnit)
 
-		for j = uint(0); j < vGPUCount; j++ {
+		for j := uint(0); j < vGPUCount; j++ {
 			vGPUDeviceID := getVGPUID(d.UUID, j)
 			dev := pluginapi.Device{
 				ID:     vGPUDeviceID,
 				Health: pluginapi.Healthy,
 			}
-			if d.CPUAffinity != nil {
-				dev.Topology = &pluginapi.TopologyInfo{
-					Nodes: []*pluginapi.NUMANode{
-						&pluginapi.NUMANode{
-							ID: int64(*(d.CPUAffinity)),
-						},
-					},
-				}
-			}
+			// if d.CPUAffinity != nil {
+			// 	dev.Topology = &pluginapi.TopologyInfo{
+			// 		Nodes: []*pluginapi.NUMANode{
+			// 			&pluginapi.NUMANode{
+			// 				ID: int64(*(d.CPUAffinity)),
+			// 			},
+			// 		},
+			// 	}
+			// }
 			devs = append(devs, &dev)
 		}
 	}
@@ -121,7 +121,7 @@ func getVGPUID(deviceID string, vGPUIndex uint) string {
 	return fmt.Sprintf("%s-%d", deviceID, vGPUIndex)
 }
 
-func getRealDeviceID(vGPUDeviceID string) string {
+func getPhysicalDeviceID(vGPUDeviceID string) string {
 	return strings.Split(vGPUDeviceID, "-")[0]
 }
 
@@ -134,7 +134,7 @@ func deviceExists(devs []*pluginapi.Device, id string) bool {
 	return false
 }
 
-func physicialDeviceExists(dev []string, id string) bool {
+func physicialDeviceExists(devs []string, id string) bool {
 	for _, d := range devs {
 		if d == id {
 			return true

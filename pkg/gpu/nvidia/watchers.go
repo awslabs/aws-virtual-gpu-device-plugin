@@ -1,12 +1,13 @@
-package main
+package nvidia
 
 import (
-	"github.com/fsnotify/fsnotify"
 	"os"
 	"os/signal"
+
+	"github.com/fsnotify/fsnotify"
 )
 
-func newFSWatcher(files ...string) (*fsnotify.Watcher, error) {
+func NewFSWatcher(files ...string) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -23,7 +24,7 @@ func newFSWatcher(files ...string) (*fsnotify.Watcher, error) {
 	return watcher, nil
 }
 
-func newOSWatcher(sigs ...os.Signal) chan os.Signal {
+func NewOSWatcher(sigs ...os.Signal) chan os.Signal {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, sigs...)
 

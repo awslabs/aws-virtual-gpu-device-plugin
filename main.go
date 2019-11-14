@@ -17,13 +17,17 @@
 package main
 
 import (
+	"errors"
 	"flag"
 
 	"log"
+	"os"
+	"syscall"
 
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
+	"github.com/fsnotify/fsnotify"
+	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
 )
-
 
 var (
 	memoryPerVirtualGPU = flag.Int("memory-per-virtual-gpu", 1024, "Set GPU Memory for virtual GPU, support 'MiB'")
@@ -44,7 +48,6 @@ func main() {
 
 	run(*mps, *healthCheck, *memoryPerVirtualGPU)
 }
-
 
 func run(enableMPS, enableHealthCheck bool, memoryUnit int) {
 	log.Println("Loading NVML")
@@ -73,7 +76,7 @@ func run(enableMPS, enableHealthCheck bool, memoryUnit int) {
 	}
 
 	log.Println("Starting FS watcher.")
-	watcher, err := newFSWatcher(pluginapi.DevicePluginPath)
+	watcher, err := nvidia.NewFSWatcher(pluginapi.DevicePluginPath)
 	if err != nil {
 		log.Println("Failed to created FS watcher.")
 		os.Exit(1)
@@ -81,10 +84,10 @@ func run(enableMPS, enableHealthCheck bool, memoryUnit int) {
 	defer watcher.Close()
 
 	log.Println("Starting OS watcher.")
-	sigs := newOSWatcher(syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	sigs := nvidia.NewOSWatcher(syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	restart := true
-	var devicePlugin *NvidiaDevicePlugin
+	var devicePlugin *nvidia.NvidiaDevicePlugin
 
 L:
 	for {
@@ -93,7 +96,7 @@ L:
 				devicePlugin.Stop()
 			}
 
-			devicePlugin = NewNvidiaDevicePlugin(enableMPS, enableHealthCheck, memoryUnit)
+			devicePlugin = nvidia.NewNvidiaDevicePlugin(enableMPS, enableHealthCheck, memoryUnit)
 			if err := devicePlugin.Serve(); err != nil {
 				log.Println("Could not contact Kubelet, retrying. Did you enable the device plugin feature gate?")
 				// TODO: point to our own docs.
@@ -138,7 +141,7 @@ func validMemoryUnit(memoryUnit int) error {
 	d, err := nvml.NewDevice(0)
 	check(err)
 
-	if uint(*d.Memory) % memoryUnit != 0 {
+	if uint(*d.Memory)%memoryUnit != 0 {
 		return errors.New("Current GPU Model %s has total memory %d which can not divided by MemoryUnit %d", *d.Model, *d.Memory, memoryUnit)
 	}
 }
