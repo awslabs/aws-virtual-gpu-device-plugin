@@ -122,7 +122,8 @@ func getVGPUID(deviceID string, vGPUIndex uint) string {
 }
 
 func getPhysicalDeviceID(vGPUDeviceID string) string {
-	return strings.Split(vGPUDeviceID, "-")[0]
+	lastDashIndex := strings.LastIndex(vGPUDeviceID, "-")
+	return vGPUDeviceID[0:lastDashIndex]
 }
 
 func deviceExists(devs []*pluginapi.Device, id string) bool {
