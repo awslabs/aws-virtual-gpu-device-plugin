@@ -17,6 +17,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -32,6 +33,62 @@ func check(err error) {
 	}
 }
 
+// Instead of returning physicial GPU devices, let's return vGPU devices here.
+// Total number of vGPU depends on the phycial GPU memory / Memory Unit user specifies.
+func getVGPUDevices(memoryUnit int64) []*pluginapi.Device {
+	n, err := nvml.GetDeviceCount()
+	check(err)
+
+	var devs []*pluginapi.Device
+	for i := uint(0); i < n; i++ {
+		d, err := nvml.NewDevice(i)
+		check(err)
+
+		log.Infof("Device Memory: %d, vGPU Memory: %d", uint(*d.Memory), uint(memoryUnit))
+		vGPUCount := uint(*d.Memory) / uint(memoryUnit)
+
+		for j = uint(0); j < vGPUCount; j++ {
+			vGPUDeviceID := getVGPUID(d.UUID, j)
+			dev := pluginapi.Device{
+				ID:     vGPUDeviceID,
+				Health: pluginapi.Healthy,
+			}
+			if d.CPUAffinity != nil {
+				dev.Topology = &pluginapi.TopologyInfo{
+					Nodes: []*pluginapi.NUMANode{
+						&pluginapi.NUMANode{
+							ID: int64(*(d.CPUAffinity)),
+						},
+					},
+				}
+			}
+			devs = append(devs, &dev)
+		}
+	}
+
+	return devs
+}
+
+func getDeviceCount() uint {
+	n, err := nvml.GetDeviceCount()
+	check(err)
+	return n
+}
+
+func getPhysicalGPUDevices() []string {
+	n, err := nvml.GetDeviceCount()
+	check(err)
+
+	var devs []string
+	for i := uint(0); i < n; i++ {
+		d, err := nvml.NewDevice(i)
+		check(err)
+		devs = append(devs, *d.UUID)
+	}
+
+	return devs
+}
+
 func getDevices() []*pluginapi.Device {
 	n, err := nvml.GetDeviceCount()
 	check(err)
@@ -42,8 +99,8 @@ func getDevices() []*pluginapi.Device {
 		check(err)
 
 		dev := pluginapi.Device{
-			ID:		d.UUID,
-			Health:	pluginapi.Healthy,
+			ID:     d.UUID,
+			Health: pluginapi.Healthy,
 		}
 		if d.CPUAffinity != nil {
 			dev.Topology = &pluginapi.TopologyInfo{
@@ -60,9 +117,26 @@ func getDevices() []*pluginapi.Device {
 	return devs
 }
 
+func getVGPUID(deviceID string, vGPUIndex uint) string {
+	return fmt.Sprintf("%s-%d", deviceID, vGPUIndex)
+}
+
+func getRealDeviceID(vGPUDeviceID string) string {
+	return strings.Split(vGPUDeviceID, "-")[0]
+}
+
 func deviceExists(devs []*pluginapi.Device, id string) bool {
 	for _, d := range devs {
 		if d.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+func physicialDeviceExists(dev []string, id string) bool {
+	for _, d := range devs {
+		if d == id {
 			return true
 		}
 	}

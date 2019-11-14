@@ -19,9 +19,11 @@ package main
 import (
 	"flag"
 
-	"github.com/aws/eks-virtual-gpu/pkg/gpu/nvidia"
-	log "github.com/golang/glog"
+	"log"
+
+	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
 )
+
 
 var (
 	memoryPerVirtualGPU = flag.Int("memory-per-virtual-gpu", 1024, "Set GPU Memory for virtual GPU, support 'MiB'")
@@ -44,7 +46,7 @@ func main() {
 }
 
 
-func run(enableMPS, enableHealthCheck bool, memoryUnit MemoryUnit) {
+func run(enableMPS, enableHealthCheck bool, memoryUnit int) {
 	log.Println("Loading NVML")
 	if err := nvml.Init(); err != nil {
 		log.Printf("Failed to initialize NVML: %s.", err)
@@ -59,13 +61,13 @@ func run(enableMPS, enableHealthCheck bool, memoryUnit MemoryUnit) {
 	defer func() { log.Println("Shutdown of NVML returned:", nvml.Shutdown()) }()
 
 	// Check if MemoryUnit is a valid value.
-  // retrieve one GPU and check memory / MemoryUnit is equals 0 or not.
-
-
-
+	if err := validMemoryUnit(memoryUnit); err != nil {
+		log.Printf("Failed to valid memoryUnit: %s.", err)
+		os.Exit(1)
+	}
 
 	log.Println("Fetching devices.")
-	if len(getDevices(memoryUnit)) == 0 {
+	if len(getDeviceCount()) == 0 {
 		log.Println("No devices found. Waiting indefinitely.")
 		select {}
 	}
@@ -91,7 +93,7 @@ L:
 				devicePlugin.Stop()
 			}
 
-			devicePlugin = NewNvidiaDevicePlugin()
+			devicePlugin = NewNvidiaDevicePlugin(enableMPS, enableHealthCheck, memoryUnit)
 			if err := devicePlugin.Serve(); err != nil {
 				log.Println("Could not contact Kubelet, retrying. Did you enable the device plugin feature gate?")
 				// TODO: point to our own docs.
@@ -125,4 +127,24 @@ L:
 		}
 	}
 
+}
+
+// retrieve one GPU and check memory / MemoryUnit is equals 0 or not.
+func validMemoryUnit(memoryUnit int) error {
+	n, err := nvml.GetDeviceCount()
+	check(err)
+
+	// AWS EC2 has exact same GPUs on single instance so it's safe to pick any one for validation
+	d, err := nvml.NewDevice(0)
+	check(err)
+
+	if uint(*d.Memory) % memoryUnit != 0 {
+		return errors.New("Current GPU Model %s has total memory %d which can not divided by MemoryUnit %d", *d.Model, *d.Memory, memoryUnit)
+	}
+}
+
+func check(err error) {
+	if err != nil {
+		log.Panicln("Fatal:", err)
+	}
 }

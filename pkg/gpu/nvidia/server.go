@@ -24,6 +24,7 @@ import (
 	"path"
 	"strings"
 	"time"
+	"reflect"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -31,15 +32,17 @@ import (
 )
 
 const (
-	resourceName           = "nvidia.com/gpu"
-	serverSock             = pluginapi.DevicePluginPath + "nvidia.sock"
+	resourceName           = "eks.amazonaws.com/vgpu"
+	serverSock             = pluginapi.DevicePluginPath + "nvidia-aws-vgpu.sock"
 	envDisableHealthChecks = "DP_DISABLE_HEALTHCHECKS"
 	allHealthChecks        = "xids"
 )
 
 // NvidiaDevicePlugin implements the Kubernetes device plugin API
 type NvidiaDevicePlugin struct {
-	devs   []*pluginapi.Device
+	devs         []*pluginapi.Device
+	physicalDevs []string
+
 	socket string
 
 	stop   chan interface{}
@@ -49,10 +52,14 @@ type NvidiaDevicePlugin struct {
 }
 
 // NewNvidiaDevicePlugin returns an initialized NvidiaDevicePlugin
-func NewNvidiaDevicePlugin() *NvidiaDevicePlugin {
+func NewNvidiaDevicePlugin(enableMPS, enableHealthCheck bool, memoryUnit int) *NvidiaDevicePlugin {
+	vGPUDevs := getVGPUDevices(memoryUnit)
+	physicalDevs := getPhysicalGPUDevices()
+
 	return &NvidiaDevicePlugin{
-		devs:   getDevices(),
-		socket: serverSock,
+		devs:         devs,
+		physicalDevs: physicalDevs,
+		socket:       serverSock,
 
 		stop:   make(chan interface{}),
 		health: make(chan *pluginapi.Device),
@@ -193,17 +200,32 @@ func (m *NvidiaDevicePlugin) unhealthy(dev *pluginapi.Device) {
 func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.AllocateRequest) (*pluginapi.AllocateResponse, error) {
 	devs := m.devs
 	responses := pluginapi.AllocateResponse{}
+	physicalDevsMap := make(map[string]bool)
 	for _, req := range reqs.ContainerRequests {
-		response := pluginapi.ContainerAllocateResponse{
-			Envs: map[string]string{
-				"NVIDIA_VISIBLE_DEVICES": strings.Join(req.DevicesIDs, ","),
-			},
-		}
-
 		for _, id := range req.DevicesIDs {
 			if !deviceExists(devs, id) {
 				return nil, fmt.Errorf("invalid allocation request: unknown device: %s", id)
 			}
+			if dev.Health != pluginapi.Healthy {
+				return nil, fmt.Errorf("invalid allocation request with unhealthy device %s", id)
+			}
+
+			// Convert virtual GPUDeviceId to physical GPUDeviceID
+			physicalDevId := getPhysicalDeviceID(id)
+			if !physicalDevsMap[physicalDevId] {
+				physicalDevsMap[physicalDevId] = true
+			}
+		}
+
+		// Set physical GPU devices as container visiable devices
+		visibleDevs := make([]string, 0, len(physicalDevsMap))
+		for visibleDev := range physicalDevsMap {
+			visibleDevs = append(visibleDevs, visibleDev)
+		}
+		response := pluginapi.ContainerAllocateResponse{
+			Envs: map[string]string{
+				"NVIDIA_VISIBLE_DEVICES": strings.Join(visibleDevs, ","),
+			},
 		}
 
 		responses.ContainerResponses = append(responses.ContainerResponses, &response)
