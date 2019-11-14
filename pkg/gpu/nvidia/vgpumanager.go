@@ -17,7 +17,7 @@ type vGPUManager struct {
 
 // NewVirtualGPUManager create a instance of vGPUManager
 func NewVirtualGPUManager(memoryUnit int) *vGPUManager {
-	return &vGPUManager{,
+	return &vGPUManager{
 		memoryUnit: memoryUnit,
 	}
 }

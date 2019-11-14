@@ -51,7 +51,7 @@ type NvidiaDevicePlugin struct {
 }
 
 // NewNvidiaDevicePlugin returns an initialized NvidiaDevicePlugin
-func NewNvidiaDevicePlugin(enableMPS bool, memoryUnit int) *NvidiaDevicePlugin {
+func NewNvidiaDevicePlugin(memoryUnit int) *NvidiaDevicePlugin {
 	vGPUDevs := getVGPUDevices(memoryUnit)
 	physicalDevs := getPhysicalGPUDevices()
 
@@ -134,7 +134,7 @@ func (m *NvidiaDevicePlugin) Start() error {
 	}
 	conn.Close()
 
-	go m.healthcheck()
+	// go m.healthcheck()
 
 	return nil
 }
