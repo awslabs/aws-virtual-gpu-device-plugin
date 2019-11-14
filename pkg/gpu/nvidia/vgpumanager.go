@@ -5,22 +5,24 @@ import (
 	"fmt"
 	"syscall"
 
+	"log"
+
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
 	"github.com/fsnotify/fsnotify"
-	log "github.com/golang/glog"
 	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
 )
 
 type vGPUManager struct {
-	enableMPS          bool
-	enabvleHealthCheck bool
+	enableMPS         bool
+	enableHealthCheck bool
+	memoryUnit        int
 }
 
-func NewVirtualGPUManager(enableMPS, enabvleHealthCheck bool, memoryUnit int) *sharedGPUManager {
-	return &sharedGPUManager{
-		enableMPS:          enableMPS,
-		enabvleHealthCheck: enabvleHealthCheck,
-		memoryUnit:         memoryUnit,
+func NewVirtualGPUManager(enableMPS, enableHealthCheck bool, memoryUnit int) *vGPUManager {
+	return &vGPUManager{
+		enableMPS:         enableMPS,
+		enableHealthCheck: enableHealthCheck,
+		memoryUnit:        memoryUnit,
 	}
 }
 
@@ -105,6 +107,7 @@ L:
 		}
 	}
 
+	return nil
 }
 
 // retrieve one GPU and check memory / MemoryUnit is equals 0 or not.
