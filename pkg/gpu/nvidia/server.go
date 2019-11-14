@@ -156,6 +156,7 @@ func (m *NvidiaDevicePlugin) Stop() error {
 func (m *NvidiaDevicePlugin) Register(kubeletEndpoint, resourceName string) error {
 	conn, err := dial(kubeletEndpoint, 5*time.Second)
 	if err != nil {
+		log.Printf("Dial conn error: %s", err)
 		return err
 	}
 	defer conn.Close()
@@ -169,6 +170,7 @@ func (m *NvidiaDevicePlugin) Register(kubeletEndpoint, resourceName string) erro
 
 	_, err = client.Register(context.Background(), reqt)
 	if err != nil {
+		log.Printf("client register: %s", err)
 		return err
 	}
 	return nil
