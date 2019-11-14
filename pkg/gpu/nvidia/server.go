@@ -156,7 +156,7 @@ func (m *NvidiaDevicePlugin) Stop() error {
 func (m *NvidiaDevicePlugin) Register(kubeletEndpoint, resourceName string) error {
 	conn, err := dial(kubeletEndpoint, 5*time.Second)
 	if err != nil {
-		log.Printf("Dial conn error: %s", err)
+		log.Printf("endpoint %s, Dial conn error: %s", kubeletEndpoint, err)
 		return err
 	}
 	defer conn.Close()

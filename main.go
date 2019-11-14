@@ -24,15 +24,14 @@ import (
 )
 
 var (
-	mps                 = flag.Bool("mps", false, "Enable MPS")
-	memoryPerVirtualGPU = flag.Int("vgpu", 1024, "Number of virtual GPUs")
+	vGPU = flag.Int("vgpu", 1024, "Number of virtual GPUs")
 )
 
 func main() {
 	flag.Parse()
 	log.Println("Start Amazon EKS vGPU device plugin")
 
-	vgm := nvidia.NewVirtualGPUManager(*mps, *memoryPerVirtualGPU)
+	vgm := nvidia.NewVirtualGPUManager(*vGPU)
 
 	err := vgm.Run()
 	if err != nil {

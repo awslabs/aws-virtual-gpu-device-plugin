@@ -12,14 +12,12 @@ import (
 )
 
 type vGPUManager struct {
-	enableMPS  bool
 	memoryUnit int
 }
 
 // NewVirtualGPUManager create a instance of vGPUManager
-func NewVirtualGPUManager(enableMPS, memoryUnit int) *vGPUManager {
-	return &vGPUManager{
-		enableMPS:  enableMPS,
+func NewVirtualGPUManager(memoryUnit int) *vGPUManager {
+	return &vGPUManager{,
 		memoryUnit: memoryUnit,
 	}
 }
@@ -71,7 +69,7 @@ L:
 				devicePlugin.Stop()
 			}
 
-			devicePlugin = NewNvidiaDevicePlugin(vgm.enableMPS, vgm.memoryUnit)
+			devicePlugin = NewNvidiaDevicePlugin(vgm.memoryUnit)
 			if err := devicePlugin.Serve(); err != nil {
 				log.Println("Could not contact Kubelet, retrying. Did you enable the device plugin feature gate?")
 				// TODO: point to our own docs.
