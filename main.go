@@ -18,16 +18,15 @@ package main
 
 import (
 	"flag"
-
 	"log"
 
 	"github.com/aws/eks-virtual-gpu/pkg/gpu/nvidia"
 )
 
 var (
-	mps                 = flag.Bool("mps", false, "Enable or Disable MPS")
-	healthCheck         = flag.Bool("health-check", false, "Enable or disable Health check")
-	memoryPerVirtualGPU = flag.Int("memory-per-virtual-gpu", 1024, "Set GPU Memory for virtual GPU, support 'MiB'")
+	mps                 = flag.Bool("mps", false, "Enable MPS")
+	healthCheck         = flag.Bool("health-check", false, "Enable Health check")
+	memoryPerVirtualGPU = flag.Int("vgpu", 1024, "Number of virtual GPUs")
 )
 
 func main() {

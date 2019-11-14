@@ -245,6 +245,8 @@ func (m *NvidiaDevicePlugin) cleanup() error {
 	return nil
 }
 
+// Need to make sure all health check check against real device but not the virtual device
+
 func (m *NvidiaDevicePlugin) healthcheck() {
 	disableHealthChecks := strings.ToLower(os.Getenv(envDisableHealthChecks))
 	if disableHealthChecks == "all" {
