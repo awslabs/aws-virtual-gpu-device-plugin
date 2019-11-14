@@ -19,6 +19,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 
 	"log"
 	"os"
@@ -71,7 +72,7 @@ func run(enableMPS, enableHealthCheck bool, memoryUnit int) {
 	}
 
 	log.Println("Fetching devices.")
-	if len(getDeviceCount()) == 0 {
+	if len(nvidia.GetDeviceCount()) == 0 {
 		log.Println("No devices found. Waiting indefinitely.")
 		select {}
 	}
@@ -142,9 +143,11 @@ func validMemoryUnit(memoryUnit int) error {
 	d, err := nvml.NewDevice(0)
 	check(err)
 
-	if uint(*d.Memory)%memoryUnit != 0 {
-		return errors.New("Current GPU Model %s has total memory %d which can not divided by MemoryUnit %d", *d.Model, *d.Memory, memoryUnit)
+	if uint(*d.Memory)%uint(memoryUnit) != 0 {
+		return errors.New(fmt.Sprintf("Current GPU Model %s has total memory %d which can not divided by MemoryUnit %d", *d.Model, *d.Memory, memoryUnit))
 	}
+
+	return nil
 }
 
 func check(err error) {
