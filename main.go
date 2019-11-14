@@ -17,20 +17,40 @@
 package main
 
 import (
-	"log"
-	"os"
-	"syscall"
+	"flag"
 
-	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
-	"github.com/fsnotify/fsnotify"
-	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
+	"github.com/aws/eks-virtual-gpu/pkg/gpu/nvidia"
+	log "github.com/golang/glog"
+)
+
+var (
+	memoryPerVirtualGPU = flag.Int("memory-per-virtual-gpu", 1024, "Set GPU Memory for virtual GPU, support 'MiB'")
+	mps                 = flag.Bool("mps", false, "Enable or Disable MPS")
+	healthCheck         = flag.Bool("health-check", false, "Enable or disable Health check")
+	// TODO: we could ask user to pass GPU count they'd like to virtualize
 )
 
 func main() {
+	// Add parameter support?
+	// Receive  --vGPU limit -> has to be divided by 16GiB.
+	// 1. Maintain the target vGPU we want to advertise
+	// 2. ListAndWatch -> report vGPU
+	// 3. Allocate -> do binpacking, since it's just one GPU, it makes sense.
+
+	flag.Parse()
+	log.V(1).Infoln("Start Amazon EKS vGPU device plugin")
+
+	run(*mps, *healthCheck, *memoryPerVirtualGPU)
+}
+
+
+func run(enableMPS, enableHealthCheck bool, memoryUnit MemoryUnit) {
 	log.Println("Loading NVML")
 	if err := nvml.Init(); err != nil {
 		log.Printf("Failed to initialize NVML: %s.", err)
 		log.Printf("If this is a GPU node, did you set the docker default runtime to `nvidia`?")
+
+		// TODO: point to our repo
 		log.Printf("You can check the prerequisites at: https://github.com/NVIDIA/k8s-device-plugin#prerequisites")
 		log.Printf("You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start")
 
@@ -38,8 +58,14 @@ func main() {
 	}
 	defer func() { log.Println("Shutdown of NVML returned:", nvml.Shutdown()) }()
 
+	// Check if MemoryUnit is a valid value.
+  // retrieve one GPU and check memory / MemoryUnit is equals 0 or not.
+
+
+
+
 	log.Println("Fetching devices.")
-	if len(getDevices()) == 0 {
+	if len(getDevices(memoryUnit)) == 0 {
 		log.Println("No devices found. Waiting indefinitely.")
 		select {}
 	}
@@ -68,6 +94,7 @@ L:
 			devicePlugin = NewNvidiaDevicePlugin()
 			if err := devicePlugin.Serve(); err != nil {
 				log.Println("Could not contact Kubelet, retrying. Did you enable the device plugin feature gate?")
+				// TODO: point to our own docs.
 				log.Printf("You can check the prerequisites at: https://github.com/NVIDIA/k8s-device-plugin#prerequisites")
 				log.Printf("You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start")
 			} else {
@@ -97,4 +124,5 @@ L:
 			}
 		}
 	}
+
 }
