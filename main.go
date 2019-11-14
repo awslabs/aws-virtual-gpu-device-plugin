@@ -25,6 +25,7 @@ import (
 	"syscall"
 
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
+	"github.com/aws/eks-virtual-gpu/pkg/gpu/nvidia"
 	"github.com/fsnotify/fsnotify"
 	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
 )
@@ -44,7 +45,7 @@ func main() {
 	// 3. Allocate -> do binpacking, since it's just one GPU, it makes sense.
 
 	flag.Parse()
-	log.V(1).Infoln("Start Amazon EKS vGPU device plugin")
+	log.Println("Start Amazon EKS vGPU device plugin")
 
 	run(*mps, *healthCheck, *memoryPerVirtualGPU)
 }

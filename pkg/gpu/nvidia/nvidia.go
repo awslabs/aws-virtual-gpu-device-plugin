@@ -35,7 +35,7 @@ func check(err error) {
 
 // Instead of returning physicial GPU devices, let's return vGPU devices here.
 // Total number of vGPU depends on the phycial GPU memory / Memory Unit user specifies.
-func getVGPUDevices(memoryUnit int64) []*pluginapi.Device {
+func getVGPUDevices(memoryUnit int) []*pluginapi.Device {
 	n, err := nvml.GetDeviceCount()
 	check(err)
 
@@ -44,7 +44,7 @@ func getVGPUDevices(memoryUnit int64) []*pluginapi.Device {
 		d, err := nvml.NewDevice(i)
 		check(err)
 
-		log.Printf("Device Memory: %d, vGPU Memory: %d", uint(*d.Memory), uint(memoryUnit))
+		log.Printf("Device Memory: %d, vGPU Memory: %d", uint(*d.Memory), memoryUnit)
 		vGPUCount := uint(*d.Memory) / uint(memoryUnit)
 
 		for j := uint(0); j < vGPUCount; j++ {
@@ -83,7 +83,7 @@ func getPhysicalGPUDevices() []string {
 	for i := uint(0); i < n; i++ {
 		d, err := nvml.NewDevice(i)
 		check(err)
-		devs = append(devs, *d.UUID)
+		devs = append(devs, d.UUID)
 	}
 
 	return devs
@@ -103,13 +103,13 @@ func getDevices() []*pluginapi.Device {
 			Health: pluginapi.Healthy,
 		}
 		if d.CPUAffinity != nil {
-			dev.Topology = &pluginapi.TopologyInfo{
-				Nodes: []*pluginapi.NUMANode{
-					&pluginapi.NUMANode{
-						ID: int64(*(d.CPUAffinity)),
-					},
-				},
-			}
+			// dev.Topology = &pluginapi.TopologyInfo{
+			// 	Nodes: []*pluginapi.NUMANode{
+			// 		&pluginapi.NUMANode{
+			// 			ID: int64(*(d.CPUAffinity)),
+			// 		},
+			// 	},
+			// }
 		}
 		devs = append(devs, &dev)
 	}

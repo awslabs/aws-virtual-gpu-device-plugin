@@ -56,7 +56,7 @@ func NewNvidiaDevicePlugin(enableMPS, enableHealthCheck bool, memoryUnit int) *N
 	physicalDevs := getPhysicalGPUDevices()
 
 	return &NvidiaDevicePlugin{
-		devs:         devs,
+		devs:         vGPUDevs,
 		physicalDevs: physicalDevs,
 		socket:       serverSock,
 
@@ -205,9 +205,9 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 			if !deviceExists(devs, id) {
 				return nil, fmt.Errorf("invalid allocation request: unknown device: %s", id)
 			}
-			if dev.Health != pluginapi.Healthy {
-				return nil, fmt.Errorf("invalid allocation request with unhealthy device %s", id)
-			}
+			// if dev.Health != pluginapi.Healthy {
+			// 	return nil, fmt.Errorf("invalid allocation request with unhealthy device %s", id)
+			// }
 
 			// Convert virtual GPUDeviceId to physical GPUDeviceID
 			physicalDevId := getPhysicalDeviceID(id)
