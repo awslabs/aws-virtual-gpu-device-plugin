@@ -7,7 +7,6 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gogo/protobuf v1.3.0
 	github.com/golang/protobuf v1.3.2
-	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
 	golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
 	google.golang.org/genproto v0.0.0-20190926190326-7ee9db18f195
 	google.golang.org/grpc v1.24.0
@@ -18,7 +17,6 @@ require (
 )
 
 replace (
-  k8s.io/utils => k8s.io/utils v0.0.0-20190221042446-c2654d5206da
 	k8s.io/api => k8s.io/api v0.0.0-20190819141258-3544db3b9e44
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190819143637-0dbe462fe92d
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
@@ -43,4 +41,5 @@ replace (
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.0.0-20190819143045-c84c31c165c4
 	k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.0.0-20190819144209-f9ca4b649af0
 	k8s.io/sample-controller => k8s.io/sample-controller v0.0.0-20190819143301-7c475f5e1313
+	k8s.io/utils => k8s.io/utils v0.0.0-20190221042446-c2654d5206da
 )
