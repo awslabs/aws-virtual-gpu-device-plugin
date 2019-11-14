@@ -14,11 +14,11 @@ require (
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
 	k8s.io/client-go v0.0.0
-	k8s.io/kubernetes v1.15.3
-	k8s.io/utils v0.0.0-20190221042446-c2654d5206da
+	k8s.io/kubernetes v1.16.0
 )
 
 replace (
+  k8s.io/utils => k8s.io/utils v0.0.0-20190221042446-c2654d5206da
 	k8s.io/api => k8s.io/api v0.0.0-20190819141258-3544db3b9e44
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190819143637-0dbe462fe92d
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d

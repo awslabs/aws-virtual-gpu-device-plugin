@@ -53,15 +53,15 @@ func getVGPUDevices(memoryUnit int) []*pluginapi.Device {
 				ID:     vGPUDeviceID,
 				Health: pluginapi.Healthy,
 			}
-			// if d.CPUAffinity != nil {
-			// 	dev.Topology = &pluginapi.TopologyInfo{
-			// 		Nodes: []*pluginapi.NUMANode{
-			// 			&pluginapi.NUMANode{
-			// 				ID: int64(*(d.CPUAffinity)),
-			// 			},
-			// 		},
-			// 	}
-			// }
+			if d.CPUAffinity != nil {
+				dev.Topology = &pluginapi.TopologyInfo{
+					Nodes: []*pluginapi.NUMANode{
+						&pluginapi.NUMANode{
+							ID: int64(*(d.CPUAffinity)),
+						},
+					},
+				}
+			}
 			devs = append(devs, &dev)
 		}
 	}
@@ -103,13 +103,13 @@ func getDevices() []*pluginapi.Device {
 			Health: pluginapi.Healthy,
 		}
 		if d.CPUAffinity != nil {
-			// dev.Topology = &pluginapi.TopologyInfo{
-			// 	Nodes: []*pluginapi.NUMANode{
-			// 		&pluginapi.NUMANode{
-			// 			ID: int64(*(d.CPUAffinity)),
-			// 		},
-			// 	},
-			// }
+			dev.Topology = &pluginapi.TopologyInfo{
+				Nodes: []*pluginapi.NUMANode{
+					&pluginapi.NUMANode{
+						ID: int64(*(d.CPUAffinity)),
+					},
+				},
+			}
 		}
 		devs = append(devs, &dev)
 	}

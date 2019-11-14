@@ -2,7 +2,6 @@ package nvidia
 
 import (
 	"errors"
-	"fmt"
 	"syscall"
 
 	"log"
@@ -120,12 +119,12 @@ func validMemoryUnit(memoryUnit int) error {
 	}
 
 	// AWS EC2 has exact same GPUs on single instance so it's safe to pick any one for validation
-	d, err := nvml.NewDevice(0)
-	check(err)
+	// d, err := nvml.NewDevice(0)
+	// check(err)
 
-	if uint(*d.Memory)%uint(memoryUnit) != 0 {
-		return errors.New(fmt.Sprintf("Current GPU Model %s has total memory %d which can not divided by MemoryUnit %d", *d.Model, *d.Memory, memoryUnit))
-	}
+	// if uint(*d.Memory)%uint(memoryUnit) != 0 {
+	// 	return errors.New(fmt.Sprintf("Current GPU Model %s has total memory %d which can not divided by MemoryUnit %d", *d.Model, *d.Memory, memoryUnit))
+	// }
 
 	return nil
 }
