@@ -69,7 +69,7 @@ func getVGPUDevices(memoryUnit int) []*pluginapi.Device {
 	return devs
 }
 
-func GetDeviceCount() uint {
+func getDeviceCount() uint {
 	n, err := nvml.GetDeviceCount()
 	check(err)
 	return n
