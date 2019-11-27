@@ -12,13 +12,13 @@ import (
 )
 
 type vGPUManager struct {
-	memoryUnit int
+	vGPUCount int
 }
 
 // NewVirtualGPUManager create a instance of vGPUManager
-func NewVirtualGPUManager(memoryUnit int) *vGPUManager {
+func NewVirtualGPUManager(vGPUCount int) *vGPUManager {
 	return &vGPUManager{
-		memoryUnit: memoryUnit,
+		vGPUCount: vGPUCount,
 	}
 }
 
@@ -28,16 +28,15 @@ func (vgm *vGPUManager) Run() error {
 		log.Printf("Failed to initialize NVML: %s.", err)
 		log.Printf("If this is a GPU node, did you set the docker default runtime to `nvidia`?")
 
-		// TODO: point to our repo
-		log.Printf("You can check the prerequisites at: https://github.com/NVIDIA/k8s-device-plugin#prerequisites")
-		log.Printf("You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start")
+		log.Printf("You can check the prerequisites at: https://github.com/aws/eks-virtual-gpu#prerequisites")
+		log.Printf("You can learn how to set the runtime at: https://github.com/aws/k8s-virtual-gpu#quick-start")
 
 		select {}
 	}
 	defer func() { log.Println("Shutdown of NVML returned:", nvml.Shutdown()) }()
 
 	// Check if MemoryUnit is a valid value.
-	if err := validMemoryUnit(vgm.memoryUnit); err != nil {
+	if err := validMemoryUnit(vgm.vGPUCount); err != nil {
 		log.Printf("Failed to valid memoryUnit: %s.", err)
 		return err
 	}
@@ -69,12 +68,10 @@ L:
 				devicePlugin.Stop()
 			}
 
-			devicePlugin = NewNvidiaDevicePlugin(vgm.memoryUnit)
+			devicePlugin = NewNvidiaDevicePlugin(vgm.vGPUCount)
 			if err := devicePlugin.Serve(); err != nil {
-				log.Println("Could not contact Kubelet, retrying. Did you enable the device plugin feature gate?")
-				// TODO: point to our own docs.
-				log.Printf("You can check the prerequisites at: https://github.com/NVIDIA/k8s-device-plugin#prerequisites")
-				log.Printf("You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start")
+				log.Printf("You can check the prerequisites at: https://github.com/aws/eks-virtual-gpu#prerequisites")
+				log.Printf("You can learn how to set the runtime at: https://github.com/aws/k8s-virtual-gpu#quick-start")
 			} else {
 				restart = false
 			}

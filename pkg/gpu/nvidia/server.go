@@ -51,9 +51,9 @@ type NvidiaDevicePlugin struct {
 }
 
 // NewNvidiaDevicePlugin returns an initialized NvidiaDevicePlugin
-func NewNvidiaDevicePlugin(memoryUnit int) *NvidiaDevicePlugin {
-	vGPUDevs := getVGPUDevices(memoryUnit)
+func NewNvidiaDevicePlugin(vGPUCount int) *NvidiaDevicePlugin {
 	physicalDevs := getPhysicalGPUDevices()
+	vGPUDevs := getVGPUDevices(vGPUCount)
 
 	return &NvidiaDevicePlugin{
 		devs:         vGPUDevs,
@@ -210,6 +210,8 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 			// if dev.Health != pluginapi.Healthy {
 			// 	return nil, fmt.Errorf("invalid allocation request with unhealthy device %s", id)
 			// }
+
+			// Check healthy status
 
 			// Convert virtual GPUDeviceId to physical GPUDeviceID
 			physicalDevId := getPhysicalDeviceID(id)

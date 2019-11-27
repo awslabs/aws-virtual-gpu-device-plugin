@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	vGPU = flag.Int("vgpu", 1024, "Number of virtual GPUs")
+	vGPU = flag.Int("vgpu", 64, "Number of virtual GPUs")
 )
 
 func main() {
