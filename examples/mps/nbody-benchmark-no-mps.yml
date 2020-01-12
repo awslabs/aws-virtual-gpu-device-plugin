@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: set-compute-mode-default
+spec:
+  restartPolicy: OnFailure
+  nodeSelector:
+    k8s.amazonaws.com/accelerator: vgpu
+  containers:
+    - name: set-compute-mode
+      image: nvidia/cuda:latest
+      command: ['nvidia-smi', '-c', 'DEFAULT']
+      securityContext:
+        capabilities:
+          add: ["SYS_ADMIN"]
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nbody-benchmark-no-mps
+spec:
+  template:
+    spec:
+      nodeSelector:
+        k8s.amazonaws.com/accelerator: vgpu
+      containers:
+        - image: seedjeffwan/nbody:cuda-10.1
+          name: nbody
+          args:
+            - nbody
+            - -benchmark
+            - -numbodies=512000
+      restartPolicy: Never
+  backoffLimit: 4
+  parallelism: 10

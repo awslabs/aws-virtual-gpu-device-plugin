@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nvidia-mps
+spec:
+  restartPolicy: OnFailure
+  hostIPC: true
+  nodeSelector:
+    k8s.amazonaws.com/accelerator: vgpu
+  initContainers:
+    - name: set-compute-mode
+      image: nvidia/cuda:latest
+      command: ['nvidia-smi', '-c', 'EXCLUSIVE_PROCESS']
+      securityContext:
+        capabilities:
+          add: ["SYS_ADMIN"]
+  containers:
+    - image: nvidia/mps
+      name: mps
+      volumeMounts:
+        - name: nvidia-mps
+          mountPath: /tmp/nvidia-mps
+        #env:
+        #  - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
+        #    value: 10
+  volumes:
+    - name: nvidia-mps
+      hostPath:
+        path: /tmp/nvidia-mps

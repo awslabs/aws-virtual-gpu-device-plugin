@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: resnet-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: resnet-server
+    spec:
+      hostIPC: true
+      containers:
+      - name: resnet-container
+        image: seedjeffwan/tensorflow-serving-gpu:resnet
+        args:
+        # Make sure you set limit based on the vGPU account to avoid tf-serving process occupy all the gpu memory
+        - --per_process_gpu_memory_fraction=0.2
+        env:
+        - name: MODEL_NAME
+          value: resnet
+        ports:
+        - containerPort: 8501
+        resources:
+          limits:
+            eks.amazonaws.com/vgpu: 1
+        volumeMounts:
+          - name: nvidia-mps
+            mountPath: /tmp/nvidia-mps
+      volumes:
+        - name: nvidia-mps
+          hostPath:
+            path: /tmp/nvidia-mps
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: resnet-service
+  name: resnet-service
+spec:
+  ports:
+  - port: 8501
+    targetPort: 8501
+  selector:
+    app: resnet-server
+  type: ClusterIP

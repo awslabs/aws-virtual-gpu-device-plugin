@@ -235,16 +235,16 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 			},
 		}
 
-		// Set MPS environment variables
-		response.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = fmt.Sprintf("%d", 100 * uint(len(req.DevicesIDs) / len(m.devs)))
-		response.Envs["CUDA_MPS_PIPE_DIRECTORY"] = "/tmp"
+		// Set MPS environment variables - figure it out why it doesn't work?
+		//response.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = fmt.Sprintf("%d", 100 * uint(len(req.DevicesIDs) / len(m.devs)))
+		//response.Envs["CUDA_MPS_PIPE_DIRECTORY"] = "/tmp"
+		//
+		//mount := pluginapi.Mount{
+		//	ContainerPath: "/tmp/nvidia-mps",
+		//	HostPath: "/tmp/nvidia-mps",
+		//}
+		//response.Mounts = append(response.Mounts, &mount)
 
-		mount := pluginapi.Mount{
-			ContainerPath: "/tmp/nvidia-mps",
-			HostPath: "/tmp/nvidia-mps",
-		}
-
-		response.Mounts = append(response.Mounts, &mount)
 		responses.ContainerResponses = append(responses.ContainerResponses, &response)
 	}
 

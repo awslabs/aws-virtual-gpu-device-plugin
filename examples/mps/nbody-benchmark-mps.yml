@@ -1,0 +1,32 @@
+# kubectl apply -f mps.yaml first to enable MPS server.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nbody-benchmark-mps
+spec:
+  template:
+    spec:
+      hostIPC: true
+      nodeSelector:
+        k8s.amazonaws.com/accelerator: vgpu
+      containers:
+        - image: seedjeffwan/nbody:cuda-10.1
+          name: nbody
+          args:
+            - nbody
+            - -benchmark
+            - -numbodies=512000
+          resources:
+            limits:
+              eks.amazonaws.com/vgpu: 1
+          volumeMounts:
+            - name: nvidia-mps
+              mountPath: /tmp/nvidia-mps
+      volumes:
+        - name: nvidia-mps
+          hostPath:
+            path: /tmp/nvidia-mps
+      restartPolicy: Never
+  backoffLimit: 4
+  parallelism: 10

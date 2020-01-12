@@ -1,5 +1,3 @@
-## Add Apache license
-
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -20,6 +18,9 @@ spec:
       labels:
         name: vgpu-device-plugin-ds
     spec:
+      hostIPC: true
+      nodeSelector:
+        k8s.amazonaws.com/accelerator: nvidia-tesla-v100
       tolerations:
       # This toleration is deprecated. Kept here for backward compatibility
       # See https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
@@ -35,23 +36,34 @@ spec:
       priorityClassName: "system-node-critical"
       # In case machine deploy MPS device plugin and change compute mode to
       initContainers:
-        - name: set-compute-mode
-          image: debian:stretch-slim
-          command: ['nvidia-smi', '-c', 'DEFAULT']
-          securityContext:
-            capabilities:
-              add: ["SYS_ADMIN"]
+      - name: set-compute-mode
+        image: nvidia/cuda:latest
+        command: ['nvidia-smi', '-c', 'EXCLUSIVE_PROCESS']
+        securityContext:
+          capabilities:
+            add: ["SYS_ADMIN"]
       containers:
-      - image: seedjeffwan/vgpu-device-plugin:0.1.0
+      - image: seedjeffwan/eks-virtual-gpu-device-plugin:0.1.0
         name: vgpu-device-plugin-ctr
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
         volumeMounts:
-          - name: device-plugin
-            mountPath: /var/lib/kubelet/device-plugins
-      volumes:
         - name: device-plugin
-          hostPath:
-            path: /var/lib/kubelet/device-plugins
+          mountPath: /var/lib/kubelet/device-plugins
+      - image: nvidia/mps
+        name: mps
+        volumeMounts:
+        - name: nvidia-mps
+          mountPath: /tmp/nvidia-mps
+        #env:
+        #  - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
+        #    value: 10
+      volumes:
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: nvidia-mps
+        hostPath:
+          path: /tmp/nvidia-mps
