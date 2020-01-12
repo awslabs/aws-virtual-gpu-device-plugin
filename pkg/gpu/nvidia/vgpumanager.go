@@ -1,7 +1,6 @@
 package nvidia
 
 import (
-	"errors"
 	"syscall"
 
 	"log"
@@ -34,12 +33,6 @@ func (vgm *vGPUManager) Run() error {
 		select {}
 	}
 	defer func() { log.Println("Shutdown of NVML returned:", nvml.Shutdown()) }()
-
-	// Check if MemoryUnit is a valid value.
-	if err := validMemoryUnit(vgm.vGPUCount); err != nil {
-		log.Printf("Failed to valid memoryUnit: %s.", err)
-		return err
-	}
 
 	log.Println("Fetching devices.")
 	if getDeviceCount() == 0 {
@@ -99,26 +92,6 @@ L:
 			}
 		}
 	}
-
-	return nil
-}
-
-// retrieve one GPU and check memory / MemoryUnit is equals 0 or not.
-func validMemoryUnit(memoryUnit int) error {
-	n, err := nvml.GetDeviceCount()
-	check(err)
-
-	if n <= 0 {
-		return errors.New("Can not find available GPU on the node")
-	}
-
-	// AWS EC2 has exact same GPUs on single instance so it's safe to pick any one for validation
-	// d, err := nvml.NewDevice(0)
-	// check(err)
-
-	// if uint(*d.Memory)%uint(memoryUnit) != 0 {
-	// 	return errors.New(fmt.Sprintf("Current GPU Model %s has total memory %d which can not divided by MemoryUnit %d", *d.Model, *d.Memory, memoryUnit))
-	// }
 
 	return nil
 }

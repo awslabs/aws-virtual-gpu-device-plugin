@@ -207,20 +207,24 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 			if !deviceExists(devs, id) {
 				return nil, fmt.Errorf("invalid allocation request: unknown device: %s", id)
 			}
-			// if dev.Health != pluginapi.Healthy {
-			// 	return nil, fmt.Errorf("invalid allocation request with unhealthy device %s", id)
-			// }
-
-			// Check healthy status
 
 			// Convert virtual GPUDeviceId to physical GPUDeviceID
 			physicalDevId := getPhysicalDeviceID(id)
 			if !physicalDevsMap[physicalDevId] {
 				physicalDevsMap[physicalDevId] = true
 			}
+
+			dev := getDeviceById(devs, id)
+			if dev == nil {
+				return nil, fmt.Errorf("invalid allocation request: unknown device: %s", id)
+			}
+
+			if dev.Health != pluginapi.Healthy {
+				return nil, fmt.Errorf("invalid allocation request with unhealthy device %s", id)
+			}
 		}
 
-		// Set physical GPU devices as container visiable devices
+		// Set physical GPU devices as container visible devices
 		visibleDevs := make([]string, 0, len(physicalDevsMap))
 		for visibleDev := range physicalDevsMap {
 			visibleDevs = append(visibleDevs, visibleDev)
@@ -231,6 +235,16 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 			},
 		}
 
+		// Set MPS environment variables
+		response.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = fmt.Sprintf("%d", 100 * uint(len(req.DevicesIDs) / len(m.devs)))
+		response.Envs["CUDA_MPS_PIPE_DIRECTORY"] = "/tmp"
+
+		mount := pluginapi.Mount{
+			ContainerPath: "/tmp/nvidia-mps",
+			HostPath: "/tmp/nvidia-mps",
+		}
+
+		response.Mounts = append(response.Mounts, &mount)
 		responses.ContainerResponses = append(responses.ContainerResponses, &response)
 	}
 
@@ -292,6 +306,16 @@ func (m *NvidiaDevicePlugin) Serve() error {
 		return err
 	}
 	log.Println("Registered device plugin with Kubelet")
+
+	return nil
+}
+
+func getDeviceById(devices []*pluginapi.Device, deviceId string) *pluginapi.Device {
+	for _, d := range devices {
+		if d.ID == deviceId {
+			return d
+		}
+	}
 
 	return nil
 }

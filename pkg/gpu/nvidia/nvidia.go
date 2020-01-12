@@ -34,7 +34,7 @@ func check(err error) {
 }
 
 // Instead of returning physical GPU devices, device plugin returns vGPU devices here.
-// Total number of vGPU depends on the vGPU count user specifies.
+// Total number of vGPU depends on the vGPU count user specify.
 func getVGPUDevices(vGPUCount int) []*pluginapi.Device {
 	n, err := nvml.GetDeviceCount()
 	check(err)
@@ -45,7 +45,6 @@ func getVGPUDevices(vGPUCount int) []*pluginapi.Device {
 		check(err)
 
 		log.Printf("Device Memory: %d, vGPU Count: %d", uint(*d.Memory), vGPUCount)
-		//vGPUCount := uint(*d.Memory) / uint(memoryUnit)
 
 		for j := uint(0); j < uint(vGPUCount); j++ {
 			vGPUDeviceID := getVGPUID(d.UUID, j)
@@ -54,7 +53,7 @@ func getVGPUDevices(vGPUCount int) []*pluginapi.Device {
 				Health: pluginapi.Healthy,
 			}
 
-			// TODO: Affinity is not supported in kubernetes <= 1.15.x
+			// TODO: Enable Affinity for kubernetes > 1.16.x
 			//if d.CPUAffinity != nil {
 			//	dev.Topology = &pluginapi.TopologyInfo{
 			//		Nodes: []*pluginapi.NUMANode{
@@ -123,16 +122,20 @@ func physicialDeviceExists(devs []string, id string) bool {
 func watchXIDs(ctx context.Context, devs []*pluginapi.Device, xids chan<- *pluginapi.Device) {
 	eventSet := nvml.NewEventSet()
 	defer nvml.DeleteEventSet(eventSet)
+	var physicalDeviceIDs []string
 
-	// TODO: convert virtual GPU to physical GPU. It's wasting resources here.
-	// We don't have to loop all virtual GPUS here. Only need to check physical CPUs.
-
+	// We don't have to loop all virtual GPUs here. Only need to check physical CPUs.
 	for _, d := range devs {
-		physicialDeviceID := getPhysicalDeviceID(d.ID)
-		log.Printf("virtual id %s physical id %s", d.ID, physicialDeviceID)
-		err := nvml.RegisterEventForDevice(eventSet, nvml.XidCriticalError, physicialDeviceID)
+		physicalDeviceID := getPhysicalDeviceID(d.ID)
+		if physicialDeviceExists(physicalDeviceIDs, physicalDeviceID) {
+			continue
+		}
+		physicalDeviceIDs = append(physicalDeviceIDs, physicalDeviceID)
+
+		log.Printf("virtual id %s physical id %s", d.ID, physicalDeviceID)
+		err := nvml.RegisterEventForDevice(eventSet, nvml.XidCriticalError, physicalDeviceID)
 		if err != nil && strings.HasSuffix(err.Error(), "Not Supported") {
-			log.Printf("Warning: %s is too old to support healthchecking: %s. Marking it unhealthy.", physicialDeviceID, err)
+			log.Printf("Warning: %s is too old to support healthchecking: %s. Marking it unhealthy.", physicalDeviceID, err)
 
 			xids <- d
 			continue

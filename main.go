@@ -24,12 +24,18 @@ import (
 )
 
 var (
-	vGPU = flag.Int("vgpu", 64, "Number of virtual GPUs")
+	vGPU = flag.Int("vgpu", 10, "Number of virtual GPUs")
 )
+
+const VOLTA_MAXIMUM_MPS_CLIENT = 48
 
 func main() {
 	flag.Parse()
 	log.Println("Start Amazon EKS vGPU device plugin")
+
+	if *vGPU > VOLTA_MAXIMUM_MPS_CLIENT {
+		log.Fatal("Number of virtual GPUs can not exceed maximum number of MPS clients")
+	}
 
 	vgm := nvidia.NewVirtualGPUManager(*vGPU)
 
