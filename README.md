@@ -74,12 +74,12 @@ spec:
           limits:
             k8s.amazonaws.com/vgpu: 1
         volumeMounts:
-          - name: nvidia-mps
-            mountPath: /tmp/nvidia-mps
-      volumes:
         - name: nvidia-mps
-          hostPath:
-            path: /tmp/nvidia-mps
+          mountPath: /tmp/nvidia-mps
+      volumes:
+      - name: nvidia-mps
+        hostPath:
+          path: /tmp/nvidia-mps
 ```
 
 > **WARNING:** *if you don't request GPUs when using the device plugin all
