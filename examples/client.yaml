@@ -9,6 +9,3 @@ spec:
     name: python
     command: ["sleep"]
     args: ["100000"]
-    resources:
-      limits:
-        eks.amazonaws.com/vgpu: 1

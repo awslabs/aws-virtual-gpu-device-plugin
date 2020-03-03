@@ -19,7 +19,7 @@ spec:
             - -numbodies=512000
           resources:
             limits:
-              eks.amazonaws.com/vgpu: 1
+              k8s.amazonaws.com/vgpu: 1
           volumeMounts:
             - name: nvidia-mps
               mountPath: /tmp/nvidia-mps

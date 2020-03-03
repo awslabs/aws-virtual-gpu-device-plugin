@@ -27,7 +27,7 @@ ENV GO111MODULE on
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
-WORKDIR /go/src/github.com/aws/eks-virtual-gpu
+WORKDIR /go/src/github.com/awslabs/aws-virtual-gpu-device-plugin
 COPY . .
 
 RUN export CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' && \
@@ -39,6 +39,6 @@ FROM debian:stretch-slim
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=utility
 
-COPY --from=build /go/src/github.com/aws/eks-virtual-gpu/vgpu-device-plugin /usr/bin/vgpu-device-plugin
+COPY --from=build /go/src/github.com/awslabs/aws-virtual-gpu-device-plugin/vgpu-device-plugin /usr/bin/vgpu-device-plugin
 
 CMD ["vgpu-device-plugin"]

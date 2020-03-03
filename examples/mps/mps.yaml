@@ -20,9 +20,9 @@ spec:
       volumeMounts:
         - name: nvidia-mps
           mountPath: /tmp/nvidia-mps
-        #env:
-        #  - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
-        #    value: 10
+      env:
+        - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
+          value: 10
   volumes:
     - name: nvidia-mps
       hostPath:

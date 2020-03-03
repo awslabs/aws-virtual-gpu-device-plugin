@@ -9,6 +9,7 @@ spec:
       labels:
         app: resnet-server
     spec:
+      # hostIPC is required for MPS communication
       hostIPC: true
       containers:
       - name: resnet-container
@@ -21,16 +22,17 @@ spec:
           value: resnet
         ports:
         - containerPort: 8501
+        # Use virtual gpu resource here
         resources:
           limits:
-            eks.amazonaws.com/vgpu: 1
+            k8s.amazonaws.com/vgpu: 1
         volumeMounts:
-          - name: nvidia-mps
-            mountPath: /tmp/nvidia-mps
-      volumes:
         - name: nvidia-mps
-          hostPath:
-            path: /tmp/nvidia-mps
+          mountPath: /tmp/nvidia-mps
+      volumes:
+      - name: nvidia-mps
+        hostPath:
+          path: /tmp/nvidia-mps
 ---
 apiVersion: v1
 kind: Service

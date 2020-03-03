@@ -1,4 +1,4 @@
-module github.com/aws/eks-virtual-gpu
+module github.com/awslabs/aws-virtual-gpu-device-plugin
 
 go 1.12
 
