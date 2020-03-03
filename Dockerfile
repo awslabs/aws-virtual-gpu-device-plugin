@@ -10,35 +10,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:16.04 as build
+FROM golang:1.13 as build
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        g++ \
-        git \
-        ca-certificates \
-        wget && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV GOLANG_VERSION 1.12.3
-RUN wget -nv -O - https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-amd64.tar.gz \
-    | tar -C /usr/local -xz
-
-ENV GO111MODULE on
-ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-
+ENV GOPROXY direct
 WORKDIR /go/src/github.com/awslabs/aws-virtual-gpu-device-plugin
 COPY . .
 
 RUN export CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' && \
-    go build -ldflags="-s -w" -o vgpu-device-plugin main.go
+    go build -ldflags="-s -w" -o virtual-gpu-device-plugin main.go
 
 
-FROM debian:stretch-slim
+FROM amazonlinux:latest
 
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=utility
 
-COPY --from=build /go/src/github.com/awslabs/aws-virtual-gpu-device-plugin/vgpu-device-plugin /usr/bin/vgpu-device-plugin
+COPY --from=build /go/src/github.com/awslabs/aws-virtual-gpu-device-plugin/virtual-gpu-device-plugin /usr/bin/virtual-gpu-device-plugin
 
-CMD ["vgpu-device-plugin"]
+CMD ["virtual-gpu-device-plugin"]
