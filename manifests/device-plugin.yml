@@ -43,7 +43,7 @@ spec:
           capabilities:
             add: ["SYS_ADMIN"]
       containers:
-      - image: amazon/aws-virtual-gpu-device-plugin:v0.1.0
+      - image: amazon/aws-virtual-gpu-device-plugin:v0.1.1
         name: aws-virtual-gpu-device-plugin-ctr
         securityContext:
           allowPrivilegeEscalation: false
