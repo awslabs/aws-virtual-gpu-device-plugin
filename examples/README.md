@@ -23,7 +23,7 @@ Enter python client pod we created.
 ```shell
 $ kubectl exec -it python-client bash
 
-$ apt update && apt install -y vim
+$ apt update && apt install -y vim && pip install requests
 ```
 
 Prepare model client, copy the scripts from [resnet_client.py](./resnet_client.py)
