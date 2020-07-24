@@ -37,7 +37,7 @@ kubectl label node <your_k8s_node_name> k8s.amazonaws.com/accelerator=vgpu
 Update node selector label in the manifest file to match with labels of your GPU node group, then apply it to Kubernetes.
 
 ```shell
-$ kubectl create -f https://raw.githubusercontent.com/awslabs/aws-virtual-gpu-device-plugin/v0.1.0/manifests/device-plugin.yml
+$ kubectl create -f https://raw.githubusercontent.com/awslabs/aws-virtual-gpu-device-plugin/v0.1.1/manifests/device-plugin.yml
 ```
 
 ### Running GPU Jobs
