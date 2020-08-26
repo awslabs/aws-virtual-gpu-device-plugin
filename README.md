@@ -45,12 +45,15 @@ $ kubectl create -f https://raw.githubusercontent.com/awslabs/aws-virtual-gpu-de
 Virtual NVIDIA GPUs can now be consumed via container level resource requirements using the resource name `k8s.amazonaws.com/vgpu`:
 
 ```yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: resnet-deployment
 spec:
   replicas: 3
+  selector:
+    matchLabels:
+      app: resnet-server
   template:
     metadata:
       labels:
