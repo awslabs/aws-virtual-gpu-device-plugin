@@ -45,6 +45,9 @@ spec:
       containers:
       - image: amazon/aws-virtual-gpu-device-plugin:v0.1.1
         name: aws-virtual-gpu-device-plugin-ctr
+        args:
+        - /usr/bin/vgpu-device-plugin
+        - --vgpu=10
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
