@@ -37,7 +37,9 @@ spec:
       # In case machine deploy MPS device plugin and change compute mode to
       initContainers:
       - name: set-compute-mode
-        image: nvidia/cuda:latest
+        # The "latest" tag has been deprecated
+        # Check https://hub.docker.com/r/nvidia/cuda for lastest version that could be used
+        image: nvidia/cuda:cuda:11.3.0-runtime-ubuntu18.04
         command: ['nvidia-smi', '-c', 'EXCLUSIVE_PROCESS']
         securityContext:
           capabilities:
