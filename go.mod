@@ -5,14 +5,10 @@ go 1.12
 require (
 	github.com/NVIDIA/gpu-monitoring-tools v0.0.0-20191011002627-7a750c7e4f8b
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/gogo/protobuf v1.3.0
-	github.com/golang/protobuf v1.3.2
-	golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
-	google.golang.org/genproto v0.0.0-20190926190326-7ee9db18f195
+	github.com/gogo/protobuf v1.3.2 // indirect
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
+	google.golang.org/genproto v0.0.0-20190926190326-7ee9db18f195 // indirect
 	google.golang.org/grpc v1.24.0
-	k8s.io/api v0.0.0
-	k8s.io/apimachinery v0.0.0
-	k8s.io/client-go v0.0.0
 	k8s.io/kubernetes v1.16.0
 )
 
