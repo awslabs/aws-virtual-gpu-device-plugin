@@ -4,7 +4,7 @@ The virtual device plugin for Kubernetes is a Daemonset that allows you to autom
 - Expose arbitrary number of virtual GPUs on GPU nodes of your cluster.
 - Run ML serving containers backed by Accelerator with low latency and low cost in your Kubernetes cluster.
 
-This repository contains AWS virtual GPU implementation of the [Kubernetes device plugin](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/resource-management/device-plugin.md).
+This repository contains AWS virtual GPU implementation of the [Kubernetes device plugin](https://github.com/kubernetes/design-proposals-archive/blob/main/resource-management/device-plugin.md).
 
 ## Prerequisites
 
